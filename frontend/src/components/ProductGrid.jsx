@@ -122,10 +122,19 @@ const ProductGrid = () => {
   const { addToCart } = useCart();
 
   const handleAddToCart = (product) => {
-    addToCart(product);
-    setAddingId(product.id);
-    setTimeout(() => setAddingId(null), 1500); // Reset après 1.5s
+  // On crée une copie unique de l'objet pour forcer la mise à jour du panier
+  // On ajoute un timestamp interne pour que chaque ajout soit "nouveau" aux yeux de React
+  const uniqueProduct = { 
+    ...product, 
+    _instanceId: Date.now() + Math.random() 
   };
+  
+  addToCart(uniqueProduct);
+  
+  // Feedback visuel
+  setAddingId(product.id);
+  setTimeout(() => setAddingId(null), 1500);
+};
 
   const filteredProducts = products.filter(p => 
     p.name.toLowerCase().includes(searchTerm.toLowerCase())

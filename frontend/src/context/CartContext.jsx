@@ -1,37 +1,42 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-  // On récupère le panier stocké dans le navigateur au chargement
+  // On récupère le panier sauvegardé au chargement
   const [cart, setCart] = useState(() => {
-    const savedCart = localStorage.getItem('ss_cart');
+    const savedCart = localStorage.getItem('simoshop_cart');
     return savedCart ? JSON.parse(savedCart) : [];
   });
 
-  // Sauvegarde automatique dans le navigateur à chaque changement
+  // Sauvegarde automatique à chaque modification
   useEffect(() => {
-    localStorage.setItem('ss_cart', JSON.stringify(cart));
+    localStorage.setItem('simoshop_cart', JSON.stringify(cart));
   }, [cart]);
 
   const addToCart = (product) => {
-    setCart((prev) => {
-      const isAlreadyIn = prev.find(item => item.id === product.id);
-      if (isAlreadyIn) return prev; // On évite les doublons pour le moment
-      return [...prev, product];
-    });
+    setCart((prevCart) => [...prevCart, product]);
   };
 
   const removeFromCart = (id) => {
-    setCart(prev => prev.filter(item => item.id !== id));
+    // Supprime seulement une instance du produit
+    setCart((prev) => {
+      const index = prev.findIndex(item => item.id === id);
+      if (index > -1) {
+        const newCart = [...prev];
+        newCart.splice(index, 1);
+        return newCart;
+      }
+      return prev;
+    });
   };
 
   const clearCart = () => setCart([]);
 
-  const totalAmount = cart.reduce((sum, item) => sum + item.price, 0);
+  const totalAmount = cart.reduce((acc, item) => acc + item.price, 0);
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, totalAmount, clearCart }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, clearCart, totalAmount }}>
       {children}
     </CartContext.Provider>
   );
